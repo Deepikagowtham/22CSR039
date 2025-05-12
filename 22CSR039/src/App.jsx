@@ -1,35 +1,59 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useState } from 'react';
+import { fetchStocks } from './Service';
+import StockChart from './StockChart.jsx';
+import Correlation from './Correlation.jsx';
 
-function App() {
-  const [count, setCount] = useState(0)
+
+const App = () => {
+  const [ticker, setTicker] = useState('AAPL');
+  const [minutes, setMinutes] = useState(60);
+  const [stockOptions, setStockOptions] = useState([]);
+  
+  React.useEffect(() => {
+    const getStocks = async () => {
+      const stocks = await fetchStocks();
+      setStockOptions(Object.keys(stocks));
+    };
+    getStocks();
+  }, []);
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <div>
+      <h1>Stock Price Aggregation</h1>
 
-export default App
+      <div>
+        <label>
+          Select Stock:
+          <select onChange={(e) => setTicker(e.target.value)} value={ticker}>
+            {stockOptions.map((stock) => (
+              <option key={stock} value={stock}>
+                {stock}
+              </option>
+            ))}
+          </select>
+        </label> <br/><br/>
+      </div>
+
+      <div>
+        <label>
+          Time Interval (minutes):
+          <select onChange={(e) => setMinutes(e.target.value)} value={minutes}>
+            <option value={30}>30</option>
+            <option value={60}>60</option>
+            <option value={120}>120</option>
+          </select>
+        </label>
+      </div>
+
+      <div>
+        <StockChart ticker={ticker} minutes={minutes} />
+      </div>
+
+      <div>
+        <Correlation minutes={minutes} />
+      </div>
+    </div>
+  );
+};
+
+export default App;
